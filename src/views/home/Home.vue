@@ -42,7 +42,6 @@ import NavBar from "components/common/navbar/NavBar";
 import TabControl from "components/content/tabcontrol/TabControl";
 import GoodsList from "components/content/goods/GoodsList";
 import Scroll from "components/common/scroll/Scroll";
-import BackTop from "components/content/backtop/BackTop";
 
 import HomeSwiper from "./childrenComponents/HomeSwiper";
 import RecommandViews from "./childrenComponents/RecommandViews";
@@ -50,6 +49,8 @@ import FeatureView from "./childrenComponents/FeatureView";
 
 import { getHomeMultiData, getHomeData } from "network/home";
 import { debounce } from "common/utils";
+import { itemImageListenerMixin, backTopMixin } from "common/mixin";
+
 
 export default {
   name: "Home",
@@ -61,8 +62,8 @@ export default {
     TabControl,
     GoodsList,
     Scroll,
-    BackTop
   },
+  mixins: [itemImageListenerMixin ,backTopMixin],
   data() {
     return {
       banners: [],
@@ -75,7 +76,8 @@ export default {
       currentType: "pop",
       isShowBackTop: false,
       tabOffsetTop: 0,
-      isTabShow: false
+      isTabShow: false,
+      saveY: 0,
     };
   },
   computed: {
@@ -93,13 +95,21 @@ export default {
     this.getHomeData("new");
     this.getHomeData("sell");
   },
-  mounted() {
-    // 接受GoodsItem.vue传来的方法
-    const refresh = debounce(this.$refs.scroll.refresh, 50);
-    this.$bus.$on("itemImageLoad", () => {
-      refresh();
-    });
+  activated() {
+    // 活跃时回到原来的位置
+    console.log("A:"+this.saveY);
+
+    this.$refs.scroll.scrollTo(0, this.saveY);
+    this.$refs.scroll.refresh();
+
   },
+  deactivated(){
+    // 离开时记录之前的位置
+    this.saveY = this.$refs.scroll.getScrollY();
+    console.log("D:"+this.saveY);
+
+  },
+  mounted() {},
   methods: {
     /**
      *  业务逻辑方法
@@ -121,10 +131,7 @@ export default {
       this.$refs.TabControl2.currentIndex = index;
 
     },
-    // 2.回到顶部方法
-    backTop() {
-      this.$refs.scroll.scrollTo(0, 0);
-    },
+
     // 3.回到顶部图标的隐藏或显示
     contentScroll(position) {
       // 1.返回顶部按钮(图标)显示和隐藏
@@ -174,11 +181,6 @@ export default {
   height: 100vh;
 }
 .home-nav {
-  /* position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  z-index: 9; */
   background-color: var(--color-tint);
 }
 .content {

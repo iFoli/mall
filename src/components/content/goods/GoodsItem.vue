@@ -1,7 +1,7 @@
 <template>
-  <div class="goodsItem">
+  <div class="goodsItem" @click="itemClick">
     <!-- 1.通过@load来监听图片加载完成 -->
-    <img :src="goodsItem.show.img" @load="itemImageLoad" />
+    <img :src="showImage" @load="itemImageLoad" :key="showImage"/>
     <div class="goodsInfo">
       <p>{{goodsItem.title}}</p>
       <span class="price">{{goodsItem.price}}</span>
@@ -24,9 +24,18 @@ export default {
   methods: {
     itemImageLoad() {
       // 2.通过事件总线$bus.$emit()发出事件
-      this.$bus.$emit('itemImageLoad');
+      this.$bus.$emit("itemImageLoad");
+    },
+    itemClick() {
+      this.$router.push("/detail/" + this.goodsItem.iid);
     }
-  }
+  },
+  computed: {
+    showImage() {
+      return this.goodsItem.img || this.goodsItem.image || this.goodsItem.show.img;
+    }
+  },
+
 };
 </script>
 
@@ -49,7 +58,7 @@ export default {
   overflow: hidden;
   text-align: center;
 }
-.goodsInfo p{
+.goodsInfo p {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -63,7 +72,7 @@ export default {
   position: relative;
 }
 .goodsInfo .collect::before {
-  content: '';
+  content: "";
   position: absolute;
   left: -15px;
   top: -1px;
@@ -71,5 +80,4 @@ export default {
   height: 14px;
   background: url("~assets/img/common/collect.svg") 0 0/14px 14px;
 }
-
 </style>
